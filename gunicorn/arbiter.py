@@ -102,6 +102,7 @@ class Arbiter(object):
         self.address = self.cfg.address
         self.num_workers = self.cfg.workers
         self.timeout = self.cfg.timeout
+        self.timeout_start_after = self.cfg.timeout_start_after
         self.proc_name = self.cfg.proc_name
 
         self.log.debug('Current configuration:\n{0}'.format(
@@ -492,8 +493,10 @@ class Arbiter(object):
         workers = list(self.WORKERS.items())
         for (pid, worker) in workers:
             try:
-                if time.time() - worker.tmp.last_update() <= self.timeout:
-                    continue
+                now = time.time()
+                if now - worker.created < self.timeout_start_after or \
+                   now - worker.tmp.last_update() <= self.timeout:
+                        continue
             except (OSError, ValueError):
                 continue
 
@@ -573,7 +576,7 @@ class Arbiter(object):
         # Do not inherit the temporary files of other workers
         for sibling in self.WORKERS.values():
             sibling.tmp.close()
-        
+
         # Process Child
         worker.pid = os.getpid()
         try:

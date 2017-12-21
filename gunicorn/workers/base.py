@@ -48,6 +48,7 @@ class Worker(object):
         self.booted = False
         self.aborted = False
         self.reloader = None
+        self.created = time.time()
 
         self.nr = 0
         jitter = randint(0, cfg.max_requests_jitter)
